@@ -53,6 +53,40 @@ O joystick fornecerá valores analógicos correspondentes aos eixos X e Y, que s
 4. Compile e faça upload do código para a placa.
 5. Monitore via Serial Monitor (115200 baud).
 
+### Comandos para Compilar com Pico SDK e CMake
+
+1. **Instale o Pico SDK**:
+  ```sh
+  git clone -b master https://github.com/raspberrypi/pico-sdk.git
+  cd pico-sdk
+  git submodule update --init
+  ```
+
+2. **Configure o ambiente**:
+  ```sh
+  setx PICO_SDK_PATH "C:\caminho\para\pico-sdk"
+  ```
+
+3. **Crie um diretório de build**:
+  ```sh
+  mkdir build
+  cd build
+  ```
+
+4. **Configure o projeto com CMake**:  
+  ```sh
+  cmake -G "NMake Makefiles" ..
+  ```
+
+5. **Compile o projeto**:
+  ```sh
+  nmake
+  ```
+
+6. **Carregue o binário na placa Pico**:
+  - Conecte a placa Pico ao seu computador enquanto mantém pressionado o botão BOOTSEL, solte o botão após conectar. A placa será montada como uma unidade de armazenamento USB.
+  - Copie o arquivo .uf2 gerado no diretório build para a unidade de armazenamento USB.
+
 ## 📦 Estrutura do Projeto
 
 ```
