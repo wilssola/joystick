@@ -62,7 +62,7 @@ void led_pwm_setup(uint led_pin, uint *slice_num, uint16_t level) {
     pwm_set_wrap(*slice_num, PWM_PERIOD);    
 
     pwm_set_gpio_level(led_pin, level);
-    
+
     pwm_set_enabled(*slice_num, true);
 }
 
@@ -87,6 +87,8 @@ void button_init() {
     // Configura interrupções para os botões
     gpio_set_irq_enabled_with_callback(BUTTON_A_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_button_callback);
     gpio_set_irq_enabled_with_callback(BUTTON_B_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_button_callback);
+
+    gpio_set_irq_enabled_with_callback(JOYSTICK_SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_button_callback);
 }
 
 // Função para inicializar o controlador WS2812
@@ -289,19 +291,17 @@ int main() {
         ssd1306_send_data(&ssd);
 
         // Verifica se o botão do joystick foi pressionado
-        if (!gpio_get(JOYSTICK_SW_PIN)) {
+        if (joystick_pressed) {
             toggle_green_led_and_border(&ssd);
-            sleep_ms(200); // Delay para debounce
         }
 
         // Verifica se o botão A foi pressionado
-        if (!gpio_get(BUTTON_A_PIN)) {
+        if (button_a_pressed) {
             led_pwm_enabled = !led_pwm_enabled;
             if (!led_pwm_enabled) {
                 pwm_set_gpio_level(LED_RGB_RED_PIN, 0);
                 pwm_set_gpio_level(LED_RGB_BLUE_PIN, 0);
             }
-            sleep_ms(200); // Delay para debounce
         }
 
         sleep_ms(50);
