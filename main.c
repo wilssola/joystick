@@ -7,6 +7,8 @@
 #include "pico/multicore.h"
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
+#include "hardware/adc.h"
+#include "hardware/pwm.h"
 
 #include "ws2812.pio.h"
 
@@ -59,6 +61,16 @@ void ws2812_init() {
     int sm = 0;
     uint offset = pio_add_program(pio, &ws2812_program);
     ws2812_program_init(pio, sm, offset, WS2812_PIN, 800000, false);
+}
+
+void joystick_init() {
+    gpio_init(JOYSTICK_SW_PIN);
+    gpio_set_dir(JOYSTICK_SW_PIN, GPIO_IN);
+    gpio_pull_up(JOYSTICK_SW_PIN);
+
+    adc_init();
+    adc_gpio_init(JOYSTICK_VRX_PIN);
+    adc_gpio_init(JOYSTICK_VRY_PIN);
 }
 
 void core1_entry() {
