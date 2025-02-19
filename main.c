@@ -25,17 +25,20 @@ volatile uint8_t number = MIN_NUMBER;
 
 volatile uint8_t led_color = MIN_LED;
 
+volatile uint16_t vrx = 0, vry = 0;
+
 volatile bool both_buttons_pressed = false;
 
-volatile bool led_green_state = false;
-volatile bool led_blue_state = false;
+volatile bool led_green_state = false, led_blue_state = false;
 
 // Função para inicializar o LED RGB
 void led_init() {    
     gpio_init(LED_RGB_RED_PIN);
     gpio_set_dir(LED_RGB_RED_PIN, GPIO_OUT);
+
     gpio_init(LED_RGB_GREEN_PIN);
     gpio_set_dir(LED_RGB_GREEN_PIN, GPIO_OUT);
+
     gpio_init(LED_RGB_BLUE_PIN);
     gpio_set_dir(LED_RGB_BLUE_PIN, GPIO_OUT);
 }
@@ -45,6 +48,7 @@ void button_init() {
     gpio_init(BUTTON_A_PIN);
     gpio_set_dir(BUTTON_A_PIN, GPIO_IN);
     gpio_pull_up(BUTTON_A_PIN);
+
     gpio_init(BUTTON_B_PIN);
     gpio_set_dir(BUTTON_B_PIN, GPIO_IN);
     gpio_pull_up(BUTTON_B_PIN);
@@ -165,6 +169,16 @@ void toggle_blue_led(ssd1306_t *ssd) {
     printf("%s\n", message);
 }
 
+void read_joystic(uint16_t *vrx, uint16_t *vry) {
+    adc_select_input(ADC_CHANNEL_0);
+    sleep_us(1);
+    *vrx = adc_read();
+    
+    adc_select_input(ADC_CHANNEL_1);
+    sleep_us(1);
+    *vry = adc_read();
+}
+
 int main() {
     stdio_init_all();
 
@@ -176,6 +190,9 @@ int main() {
 
     // Inicializa o controlador WS2812
     ws2812_init();
+
+    // Inicializa o joystick
+    joystick_init();
 
     // Inicializa o I2C
     i2c_init(I2C_PORT, I2C_BAUDRATE);
@@ -216,6 +233,8 @@ int main() {
             button_b_pressed = false;
             toggle_blue_led(&ssd);
         }
+
+        read_joystic(&vrx, &vry);
 
         check_both_buttons();
     }
