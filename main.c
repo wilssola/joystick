@@ -39,7 +39,9 @@ uint8_t square_x = (WIDTH - 8) / 2;
 uint8_t square_y = (HEIGHT - 8) / 2;
 
 bool led_pwm_enabled = true;
+
 bool border_style = false;
+uint8_t border_style_index = 0;
 
 // Função para inicializar o LED RGB
 void led_init() {    
@@ -216,10 +218,10 @@ void read_joystick(uint16_t *vrx, uint16_t *vry) {
         uint16_t blue_level = abs((int16_t)(*vry) - 2048) * 2;
 
         // Apaga o LED se o joystick estiver na posição central
-        if (abs((int16_t)(*vrx) - 2048) < 100) {
+        if (abs((int16_t)(*vrx) - 2048) < 128) {
             red_level = 0;
         }
-        if (abs((int16_t)(*vry) - 2048) < 100) {
+        if (abs((int16_t)(*vry) - 2048) < 128) {
             blue_level = 0;
         }
 
@@ -230,7 +232,14 @@ void read_joystick(uint16_t *vrx, uint16_t *vry) {
 
 void draw_border(ssd1306_t *ssd) {
     if (border_style) {
-        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, true, false);
+        switch (border_style_index) {
+            case 1:
+                ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, true, false);
+                break;
+            case 0:
+                ssd1306_rect(ssd, 32, 64, WIDTH, HEIGHT, true, false);
+                break;
+        }
     } else {
         ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, false, false);
     }
@@ -241,6 +250,7 @@ void toggle_green_led_and_border(ssd1306_t *ssd) {
     gpio_put(LED_RGB_GREEN_PIN, led_green_state);
 
     border_style = !border_style;
+    border_style_index = !border_style_index;
 
     display_clean(ssd);
     draw_border(ssd);
