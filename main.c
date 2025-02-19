@@ -144,9 +144,8 @@ void check_both_buttons() {
     sleep_ms(20);
 }
 
-// Implement the logic to display the symbol on the WS2812 matrix
+// Função para exibir o símbolo na matriz WS2812
 void display_symbol(uint8_t number) {
-    // This is a placeholder function
     ws2812_clear();
 
     display_number(number);
