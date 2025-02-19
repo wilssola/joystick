@@ -55,16 +55,22 @@ void led_init() {
 
 void led_pwm_setup(uint led_pin, uint *slice_num, uint16_t level) {
     gpio_set_function(led_pin, GPIO_FUNC_PWM);
+
     *slice_num = pwm_gpio_to_slice_num(led_pin);
+
     pwm_set_clkdiv(*slice_num, PWM_DIVIDER);
-    pwm_set_wrap(*slice_num, PWM_PERIOD);
+    pwm_set_wrap(*slice_num, PWM_PERIOD);    
+
     pwm_set_gpio_level(led_pin, level);
+    
     pwm_set_enabled(*slice_num, true);
 }
 
 void led_pwm_init() {
     led_pwm_setup(LED_RGB_RED_PIN, &slice_num_red, level_red);
-    led_pwm_setup(LED_RGB_GREEN_PIN, &slice_num_green, level_green);
+
+    //led_pwm_setup(LED_RGB_GREEN_PIN, &slice_num_green, level_green);
+
     led_pwm_setup(LED_RGB_BLUE_PIN, &slice_num_blue, level_blue);
 }
 
@@ -193,12 +199,12 @@ void toggle_blue_led(ssd1306_t *ssd) {
     printf("%s\n", message);
 }
 
-void read_joystic(uint16_t *vrx, uint16_t *vry) {
-    adc_select_input(ADC_CHANNEL_0);
+void read_joystick(uint16_t *vrx, uint16_t *vry) {
+    adc_select_input(ADC_CHANNEL_1);
     sleep_us(1);
     *vrx = adc_read();
     
-    adc_select_input(ADC_CHANNEL_1);
+    adc_select_input(ADC_CHANNEL_0);
     sleep_us(1);
     *vry = adc_read();
 
@@ -272,11 +278,11 @@ int main() {
             }
         }
         
-        read_joystic(&vrx, &vry);
+        read_joystick(&vrx, &vry);
 
         // Atualiza a posição do quadrado com base nos valores do joystick
         square_x = (vrx * (WIDTH - 8)) / 4095;
-        square_y = (vry * (HEIGHT - 8)) / 4095;
+        square_y = ((4095 - vry) * (HEIGHT - 8)) / 4095;
 
         display_clean(&ssd);
         ssd1306_rect(&ssd, square_y, square_x, 8, 8, true, true);
