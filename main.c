@@ -215,6 +215,14 @@ void read_joystick(uint16_t *vrx, uint16_t *vry) {
         uint16_t red_level = abs((int16_t)(*vrx) - 2048) * 2;
         uint16_t blue_level = abs((int16_t)(*vry) - 2048) * 2;
 
+        // Apaga o LED se o joystick estiver na posição central
+        if (abs((int16_t)(*vrx) - 2048) < 100) {
+            red_level = 0;
+        }
+        if (abs((int16_t)(*vry) - 2048) < 100) {
+            blue_level = 0;
+        }
+
         pwm_set_gpio_level(LED_RGB_RED_PIN, red_level);
         pwm_set_gpio_level(LED_RGB_BLUE_PIN, blue_level);
     }
