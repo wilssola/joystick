@@ -21,11 +21,15 @@
 #include "include/ws2812.h"
 #include "include/ssd1306_i2c.h"
 
+uint16_t level_red = 100, level_green = 100, level_blue = 100;
+
+uint slice_num_red, slice_num_green, slice_num_blue;
+
+uint16_t vrx, vry;
+
 volatile uint8_t number = MIN_NUMBER;
 
 volatile uint8_t led_color = MIN_LED;
-
-volatile uint16_t vrx = 0, vry = 0;
 
 volatile bool both_buttons_pressed = false;
 
@@ -41,6 +45,21 @@ void led_init() {
 
     gpio_init(LED_RGB_BLUE_PIN);
     gpio_set_dir(LED_RGB_BLUE_PIN, GPIO_OUT);
+}
+
+void led_pwm_setup(uint led_pin, uint *slice_num, uint16_t level) {
+    gpio_set_function(led_pin, GPIO_FUNC_PWM);
+    *slice_num = pwm_gpio_to_slice_num(led_pin);
+    pwm_set_clkdiv(*slice_num, PWM_DIVIDER);
+    pwm_set_wrap(*slice_num, PWM_PERIOD);
+    pwm_set_gpio_level(led_pin, level);
+    pwm_set_enabled(*slice_num, true);
+}
+
+void led_pwm_init() {
+    led_pwm_setup(LED_RGB_RED_PIN, &slice_num_red, level_red);
+    led_pwm_setup(LED_RGB_GREEN_PIN, &slice_num_green, level_green);
+    led_pwm_setup(LED_RGB_BLUE_PIN, &slice_num_blue, level_blue);
 }
 
 // Função para inicializar os botões
@@ -182,8 +201,8 @@ void read_joystic(uint16_t *vrx, uint16_t *vry) {
 int main() {
     stdio_init_all();
 
-    // Inicializa os pinos do LED RGB
-    led_init();
+    // Inicializa os LEDs RGB usando PWM
+    led_pwm_init();
 
     // Inicializa os pinos dos botões com pull-up
     button_init();
@@ -223,20 +242,13 @@ int main() {
                 }
             }
         }
-
-        if (button_a_pressed && !button_b_pressed) {
-            button_a_pressed = false;
-            toggle_green_led(&ssd);
-        }
-
-        if (button_b_pressed && !button_a_pressed) {
-            button_b_pressed = false;
-            toggle_blue_led(&ssd);
-        }
-
+        
         read_joystic(&vrx, &vry);
 
-        check_both_buttons();
+        pwm_set_gpio_level(LED_RGB_RED_PIN, vry);
+        pwm_set_gpio_level(LED_RGB_BLUE_PIN, vrx);
+
+        sleep_ms(50);
     }
 
     return 0;

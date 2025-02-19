@@ -20,4 +20,7 @@
 #define ADC_CHANNEL_0 0
 #define ADC_CHANNEL_1 1
 
+#define PWM_DIVIDER 16.0
+#define PWM_PERIOD 2048
+
 #endif
