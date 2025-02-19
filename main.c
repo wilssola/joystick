@@ -21,12 +21,6 @@
 #include "include/ws2812.h"
 #include "include/ssd1306_i2c.h"
 
-uint16_t level_red = 0, level_green = 0, level_blue = 0;
-
-uint slice_num_red, slice_num_green, slice_num_blue;
-
-uint16_t vrx, vry;
-
 volatile uint8_t number = MIN_NUMBER;
 
 volatile uint8_t led_color = MIN_LED;
@@ -34,6 +28,18 @@ volatile uint8_t led_color = MIN_LED;
 volatile bool both_buttons_pressed = false;
 
 volatile bool led_green_state = false, led_blue_state = false;
+
+uint16_t level_red = 0, level_green = 0, level_blue = 0;
+
+uint slice_num_red, slice_num_green, slice_num_blue;
+
+uint16_t vrx, vry;
+
+uint8_t square_x = (WIDTH - 8) / 2;
+uint8_t square_y = (HEIGHT - 8) / 2;
+
+bool led_pwm_enabled = true;
+bool border_style = false;
 
 // Função para inicializar o LED RGB
 void led_init() {    
@@ -196,6 +202,30 @@ void read_joystic(uint16_t *vrx, uint16_t *vry) {
     adc_select_input(ADC_CHANNEL_1);
     sleep_us(1);
     *vry = adc_read();
+
+    // Atualiza o brilho do LED com base na posição do joystick
+    if (led_pwm_enabled) {
+        uint16_t red_level = abs((int16_t)(*vrx) - 2048) * 2;
+        uint16_t blue_level = abs((int16_t)(*vry) - 2048) * 2;
+
+        pwm_set_gpio_level(LED_RGB_RED_PIN, red_level);
+        pwm_set_gpio_level(LED_RGB_BLUE_PIN, blue_level);
+    }
+}
+
+void toggle_green_led_and_border(ssd1306_t *ssd) {
+    led_green_state = !led_green_state;
+    gpio_put(LED_RGB_GREEN_PIN, led_green_state);
+
+    border_style = !border_style;
+
+    display_clean(ssd);
+    if (border_style) {
+        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, true, false);
+    } else {
+        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, false, false);
+    }
+    ssd1306_send_data(ssd);
 }
 
 int main() {
@@ -245,11 +275,29 @@ int main() {
         
         read_joystic(&vrx, &vry);
 
-        vry = vry == 2048 ? 0 : vry;
-        vrx = vrx == 2048 ? 0 : vrx;
+        // Atualiza a posição do quadrado com base nos valores do joystick
+        square_x = (vrx * (WIDTH - 8)) / 4095;
+        square_y = (vry * (HEIGHT - 8)) / 4095;
 
-        pwm_set_gpio_level(LED_RGB_RED_PIN, vry);
-        pwm_set_gpio_level(LED_RGB_BLUE_PIN, vrx);
+        display_clean(&ssd);
+        ssd1306_rect(&ssd, square_y, square_x, 8, 8, true, true);
+        ssd1306_send_data(&ssd);
+
+        // Verifica se o botão do joystick foi pressionado
+        if (!gpio_get(JOYSTICK_SW_PIN)) {
+            toggle_green_led_and_border(&ssd);
+            sleep_ms(200); // Delay para debounce
+        }
+
+        // Verifica se o botão A foi pressionado
+        if (!gpio_get(BUTTON_A_PIN)) {
+            led_pwm_enabled = !led_pwm_enabled;
+            if (!led_pwm_enabled) {
+                pwm_set_gpio_level(LED_RGB_RED_PIN, 0);
+                pwm_set_gpio_level(LED_RGB_BLUE_PIN, 0);
+            }
+            sleep_ms(200); // Delay para debounce
+        }
 
         sleep_ms(50);
     }
