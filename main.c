@@ -220,6 +220,14 @@ void read_joystick(uint16_t *vrx, uint16_t *vry) {
     }
 }
 
+void draw_border(ssd1306_t *ssd) {
+    if (border_style) {
+        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, true, false);
+    } else {
+        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, false, false);
+    }
+}
+
 void toggle_green_led_and_border(ssd1306_t *ssd) {
     led_green_state = !led_green_state;
     gpio_put(LED_RGB_GREEN_PIN, led_green_state);
@@ -227,11 +235,7 @@ void toggle_green_led_and_border(ssd1306_t *ssd) {
     border_style = !border_style;
 
     display_clean(ssd);
-    if (border_style) {
-        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, true, false);
-    } else {
-        ssd1306_rect(ssd, 0, 0, WIDTH, HEIGHT, false, false);
-    }
+    draw_border(ssd);
     ssd1306_send_data(ssd);
 }
 
@@ -291,11 +295,13 @@ int main() {
 
         display_clean(&ssd);
         ssd1306_rect(&ssd, square_y, square_x, 8, 8, true, true);
+        draw_border(&ssd);
         ssd1306_send_data(&ssd);
 
         // Verifica se o botão do joystick foi pressionado
         if (joystick_pressed) {
             toggle_green_led_and_border(&ssd);
+            joystick_pressed = false;
         }
 
         // Verifica se o botão A foi pressionado
@@ -305,6 +311,7 @@ int main() {
                 pwm_set_gpio_level(LED_RGB_RED_PIN, 0);
                 pwm_set_gpio_level(LED_RGB_BLUE_PIN, 0);
             }
+            button_a_pressed = false;
         }
 
         sleep_ms(50);
