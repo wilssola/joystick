@@ -21,7 +21,7 @@
 #include "include/ws2812.h"
 #include "include/ssd1306_i2c.h"
 
-uint16_t level_red = 100, level_green = 100, level_blue = 100;
+uint16_t level_red = 0, level_green = 0, level_blue = 0;
 
 uint slice_num_red, slice_num_green, slice_num_blue;
 
@@ -244,6 +244,9 @@ int main() {
         }
         
         read_joystic(&vrx, &vry);
+
+        vry = vry == 2048 ? 0 : vry;
+        vrx = vrx == 2048 ? 0 : vrx;
 
         pwm_set_gpio_level(LED_RGB_RED_PIN, vry);
         pwm_set_gpio_level(LED_RGB_BLUE_PIN, vrx);
