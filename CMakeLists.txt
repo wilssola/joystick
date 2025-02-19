@@ -41,7 +41,7 @@ add_executable(joystick main.c)
 pico_generate_pio_header(joystick ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
 # pull in common dependencies and additional i2c hardware support
-target_link_libraries(joystick pico_stdlib hardware_pio pico_multicore hardware_i2c pico_stdio_usb )
+target_link_libraries(joystick pico_stdlib hardware_pio pico_multicore hardware_i2c pico_stdio_usb hardware_adc hardware_pwm )
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(joystick)
