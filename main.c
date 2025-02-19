@@ -43,14 +43,14 @@ bool border_style = false;
 
 // Função para inicializar o LED RGB
 void led_init() {    
-    gpio_init(LED_RGB_RED_PIN);
-    gpio_set_dir(LED_RGB_RED_PIN, GPIO_OUT);
+    //gpio_init(LED_RGB_RED_PIN);
+    //gpio_set_dir(LED_RGB_RED_PIN, GPIO_OUT);
 
     gpio_init(LED_RGB_GREEN_PIN);
     gpio_set_dir(LED_RGB_GREEN_PIN, GPIO_OUT);
 
-    gpio_init(LED_RGB_BLUE_PIN);
-    gpio_set_dir(LED_RGB_BLUE_PIN, GPIO_OUT);
+    //gpio_init(LED_RGB_BLUE_PIN);
+    //gpio_set_dir(LED_RGB_BLUE_PIN, GPIO_OUT);
 }
 
 void led_pwm_setup(uint led_pin, uint *slice_num, uint16_t level) {
@@ -237,6 +237,9 @@ void toggle_green_led_and_border(ssd1306_t *ssd) {
 
 int main() {
     stdio_init_all();
+
+    // Inicializa os LEDs RGB
+    led_init();
 
     // Inicializa os LEDs RGB usando PWM
     led_pwm_init();
